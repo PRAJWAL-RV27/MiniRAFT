@@ -1,0 +1,90 @@
+services:
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: miniraft-gateway
+    working_dir: /app/gateway
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: "8080"
+      REPLICA_URLS: "http://replica1:9001,http://replica2:9002,http://replica3:9003"
+    volumes:
+      - ./gateway:/app/gateway
+      - ./frontend:/app/frontend
+    command: sh -c "npm install; npm run dev"
+    depends_on:
+      replica1:
+        condition: service_started
+      replica2:
+        condition: service_started
+      replica3:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - miniraft-net
+
+  replica1:
+    build:
+      context: ./replica1
+      dockerfile: Dockerfile
+    container_name: replica1
+    working_dir: /app
+    ports:
+      - "9001:9001"
+    environment:
+      NODE_ID: "replica1"
+      PORT: "9001"
+      PEERS: "http://replica2:9002,http://replica3:9003"
+      GATEWAY_URL: "http://gateway:8080"
+    volumes:
+      - ./replica1:/app
+    command: sh -c "npm install; npm run dev"
+    restart: unless-stopped
+    networks:
+      - miniraft-net
+
+  replica2:
+    build:
+      context: ./replica2
+      dockerfile: Dockerfile
+    container_name: replica2
+    working_dir: /app
+    ports:
+      - "9002:9002"
+    environment:
+      NODE_ID: "replica2"
+      PORT: "9002"
+      PEERS: "http://replica1:9001,http://replica3:9003"
+      GATEWAY_URL: "http://gateway:8080"
+    volumes:
+      - ./replica2:/app
+    command: sh -c "npm install; npm run dev"
+    restart: unless-stopped
+    networks:
+      - miniraft-net
+
+  replica3:
+    build:
+      context: ./replica3
+      dockerfile: Dockerfile
+    container_name: replica3
+    working_dir: /app
+    ports:
+      - "9003:9003"
+    environment:
+      NODE_ID: "replica3"
+      PORT: "9003"
+      PEERS: "http://replica1:9001,http://replica2:9002"
+      GATEWAY_URL: "http://gateway:8080"
+    volumes:
+      - ./replica3:/app
+    command: sh -c "npm install; npm run dev"
+    restart: unless-stopped
+    networks:
+      - miniraft-net
+
+networks:
+  miniraft-net:
+    driver: bridge
