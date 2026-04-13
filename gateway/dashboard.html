@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Gateway Dashboard</title>
+<style>
+
+body{
+font-family:Verdana, Geneva, Tahoma, sans-serif;
+background:#0f172a;
+color:#e2e8f0;
+padding:30px;
+}
+
+.card{
+background:#1e293b;
+max-width:920px;
+margin:0 auto;
+padding:24px;
+border-radius:12px;
+box-shadow:0 12px 30px rgba(0,0,0,0.3);
+}
+
+h1{
+margin-bottom:18px;
+}
+
+.stat{
+font-size:18px;
+margin:8px 0;
+text-align:left;
+}
+
+.replicas{
+margin-top:20px;
+text-align:left;
+display:grid;
+gap:10px;
+}
+
+.replica{
+padding:12px;
+border-radius:8px;
+background:#111827;
+border:1px solid #334155;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Gateway Monitor</h1>
+
+<div class="card">
+
+<div class="stat">
+Clients: <span id="clients">0</span>
+</div>
+
+<div class="stat">
+Inbound Strokes: <span id="inboundStrokes">0</span>
+</div>
+
+<div class="stat">
+Committed Strokes: <span id="committedStrokes">0</span>
+</div>
+
+<div class="stat">
+Leader ID: <span id="leaderId">unknown</span>
+</div>
+
+<div class="stat">
+Leader URL: <span id="leaderUrl">unknown</span>
+</div>
+
+<div class="replicas" id="replicas"></div>
+
+</div>
+
+<script>
+
+function replicaHtml(replica){
+const role = replica.state || "down";
+const term = replica.term !== undefined ? replica.term : "-";
+const commitIndex = replica.commitIndex !== undefined ? replica.commitIndex : "-";
+const healthy = replica.healthy ? "healthy" : "unreachable";
+
+return `<div class="replica">
+<strong>${replica.nodeId || replica.url}</strong><br/>
+url: ${replica.url}<br/>
+role: ${role}<br/>
+term: ${term}<br/>
+commitIndex: ${commitIndex}<br/>
+status: ${healthy}
+</div>`;
+}
+
+async function update(){
+const statsRes = await fetch("/stats");
+const stats = await statsRes.json();
+
+document.getElementById("clients").innerText = stats.clients;
+document.getElementById("inboundStrokes").innerText = stats.inboundStrokes;
+document.getElementById("committedStrokes").innerText = stats.committedStrokes;
+document.getElementById("leaderId").innerText = stats.leaderId || "unknown";
+document.getElementById("leaderUrl").innerText = stats.leaderUrl || "unknown";
+
+const clusterRes = await fetch("/cluster-status");
+const cluster = await clusterRes.json();
+
+const replicasEl = document.getElementById("replicas");
+replicasEl.innerHTML = (cluster.replicas || []).map(replicaHtml).join("");
+}
+
+setInterval(update,1000);
+update();
+
+</script>
+
+</body>
+</html>
