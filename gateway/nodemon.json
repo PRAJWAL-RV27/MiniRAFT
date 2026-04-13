@@ -1,0 +1,5 @@
+{
+  "watch": ["server.js", "dashboard.html"],
+  "ext": "js,html,json",
+  "delay": "150"
+}
