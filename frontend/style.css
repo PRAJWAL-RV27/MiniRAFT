@@ -26,6 +26,73 @@ body{
     gap:12px;
 }
 
+.color-palette {
+    display:flex;
+    gap:6px;
+}
+
+.color-btn {
+    width:28px;
+    height:28px;
+    border:2px solid white;
+    border-radius:50%;
+    cursor:pointer;
+    transition:all 0.2s;
+    padding:0;
+}
+
+.color-btn:hover {
+    transform:scale(1.15);
+    box-shadow:0 0 8px rgba(255,255,255,0.6);
+}
+
+.color-btn.active {
+    border:3px solid white;
+    box-shadow:0 0 12px rgba(255,255,255,0.8);
+    transform:scale(1.2);
+}
+
+#colorPicker {
+    width:35px;
+    height:35px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.size-control {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:rgba(255,255,255,0.1);
+    padding:6px 10px;
+    border-radius:6px;
+}
+
+.size-control label {
+    font-size:12px;
+    color:#e2e8f0;
+    font-weight:600;
+}
+
+#penSize {
+    width:80px;
+    height:5px;
+    cursor:pointer;
+    accent-color:#f97316;
+}
+
+#sizeDisplay {
+    min-width:20px;
+    text-align:center;
+    font-size:12px;
+    font-weight:600;
+    background:#f97316;
+    padding:2px 6px;
+    border-radius:4px;
+    color:white;
+}
+
 #clearBoard {
     border:none;
     border-radius:6px;
