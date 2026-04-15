@@ -2,6 +2,13 @@ const canvas = document.getElementById("board");
 const ctx = canvas.getContext("2d");
 const statusText = document.getElementById("status");
 const clearBoardButton = document.getElementById("clearBoard");
+const colorPicker = document.getElementById("colorPicker");
+const colorBtns = document.querySelectorAll(".color-btn");
+const penSizeSlider = document.getElementById("penSize");
+const sizeDisplay = document.getElementById("sizeDisplay");
+
+let currentColor = "#000000";
+let currentSize = 3;
 
 function resizeCanvas() {
     canvas.width = window.innerWidth;
@@ -13,6 +20,10 @@ window.addEventListener("resize", resizeCanvas);
 
 let drawing = false;
 let lastPoint = null;
+let lastStrokeSentAt = 0;
+
+const STROKE_SEND_INTERVAL_MS = 20;
+const MIN_POINTER_DELTA_PX = 1.5;
 
 const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
 const socket = new WebSocket(`${wsProtocol}://${window.location.host}`);
@@ -67,6 +78,34 @@ clearBoardButton.addEventListener("click", ()=>{
     sendCommand({ type: "clear" });
 });
 
+// Color picker events
+colorPicker.addEventListener("input", (e)=>{
+    currentColor = e.target.value;
+    updateColorSelection(e.target.value);
+});
+
+colorBtns.forEach(btn => {
+    btn.addEventListener("click", ()=>{
+        currentColor = btn.getAttribute("data-color");
+        colorPicker.value = currentColor;
+        updateColorSelection(currentColor);
+    });
+});
+
+// Pen size events
+penSizeSlider.addEventListener("input", (e)=>{
+    currentSize = parseInt(e.target.value);
+    sizeDisplay.innerText = currentSize;
+});
+
+function updateColorSelection(color) {
+    colorBtns.forEach(btn => btn.classList.remove("active"));
+    const activeBtn = Array.from(colorBtns).find(btn => btn.getAttribute("data-color") === color);
+    if (activeBtn) {
+        activeBtn.classList.add("active");
+    }
+}
+
 canvas.addEventListener("mousedown", (e)=>startDrawing(e.clientX, e.clientY));
 canvas.addEventListener("mouseup", stopDrawing);
 canvas.addEventListener("mouseleave", stopDrawing);
@@ -114,6 +153,7 @@ function renderSnapshot(entries) {
 
 function startDrawing(clientX, clientY) {
     drawing = true;
+    lastStrokeSentAt = 0;
     const rect = canvas.getBoundingClientRect();
     lastPoint = {
         x: clientX - rect.left,
@@ -135,13 +175,27 @@ function sendStrokeFromPointer(clientX, clientY) {
         y: clientY - rect.top
     };
 
+    const deltaX = nextPoint.x - lastPoint.x;
+    const deltaY = nextPoint.y - lastPoint.y;
+    const distance = Math.hypot(deltaX, deltaY);
+    if (distance < MIN_POINTER_DELTA_PX) {
+        return;
+    }
+
+    const now = performance.now();
+    if (now - lastStrokeSentAt < STROKE_SEND_INTERVAL_MS) {
+        return;
+    }
+
+    lastStrokeSentAt = now;
+
     const stroke = {
         fromX:lastPoint.x,
         fromY:lastPoint.y,
         toX:nextPoint.x,
         toY:nextPoint.y,
-        color:"#0f172a",
-        width:3
+        color:currentColor,
+        width:currentSize
     };
 
     lastPoint = nextPoint;
