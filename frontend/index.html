@@ -12,6 +12,22 @@
 <div class="topbar">
     <h2>Distributed Drawing Board - Mini-RAFT</h2>
     <div class="toolbar-actions">
+        <div class="color-palette">
+            <button class="color-btn" data-color="#000000" style="background-color: #000000;" title="Black"></button>
+            <button class="color-btn" data-color="#FF0000" style="background-color: #FF0000;" title="Red"></button>
+            <button class="color-btn" data-color="#00B050" style="background-color: #00B050;" title="Green"></button>
+            <button class="color-btn" data-color="#0070C0" style="background-color: #0070C0;" title="Blue"></button>
+            <button class="color-btn" data-color="#FFC000" style="background-color: #FFC000;" title="Yellow"></button>
+            <button class="color-btn" data-color="#FF5C00" style="background-color: #FF5C00;" title="Orange"></button>
+            <button class="color-btn" data-color="#9E480E" style="background-color: #9E480E;" title="Brown"></button>
+            <button class="color-btn" data-color="#FF00FF" style="background-color: #FF00FF;" title="Magenta"></button>
+        </div>
+        <input type="color" id="colorPicker" title="Custom Color">
+        <div class="size-control">
+            <label for="penSize">Size:</label>
+            <input type="range" id="penSize" min="1" max="20" value="3" title="Pen Size">
+            <span id="sizeDisplay">3</span>
+        </div>
         <button id="clearBoard" type="button">Clear Board</button>
         <span id="status">Connecting...</span>
     </div>
